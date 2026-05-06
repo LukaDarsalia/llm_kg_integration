@@ -1,0 +1,46 @@
+[project]
+name = "llm-kg"
+version = "0.0.1"
+description = "Research framework for LLM × Knowledge Graph integration (Naive RAG, HippoRAG, LightRAG and beyond)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.7",
+    "pydantic-settings>=2.4",
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+    "networkx>=3.2",
+    "wandb>=0.17",
+    "rich>=13.7",
+    "aiofiles>=23.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.5",
+]
+
+[project.scripts]
+llm-kg = "llm_kg.runner.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_kg"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
