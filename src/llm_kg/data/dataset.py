@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
 from llm_kg.data.corpus import Corpus
 from llm_kg.data.types import QAExample

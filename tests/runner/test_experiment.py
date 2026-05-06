@@ -6,7 +6,6 @@ import pytest
 
 from llm_kg.runner.experiment import Experiment
 
-
 # NOTE: YAML unquoted `null` parses to None — use quoted "null" for the string registry name.
 _NOPE_YAML = """
 method: {name: nope, params: {}}

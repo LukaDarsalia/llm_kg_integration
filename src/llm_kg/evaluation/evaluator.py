@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Iterable
 
 from llm_kg.data.types import ScoredHit
 from llm_kg.evaluation.judge import LLMJudge

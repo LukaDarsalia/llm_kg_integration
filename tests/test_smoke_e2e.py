@@ -1,8 +1,9 @@
 """End-to-end smoke test: stub everything that needs a network or disk-heavy
 backend, then run a real Experiment through the real runner."""
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 import numpy as np
 
@@ -27,7 +28,6 @@ from llm_kg.providers.base import EmbeddingProvider, LLMProvider, LLMResponse
 from llm_kg.runner.experiment import Experiment
 from llm_kg.storage import GRAPH_REGISTRY, KV_REGISTRY, VECTOR_REGISTRY
 from llm_kg.storage.base import GraphStore, KVStore, VectorStore
-
 
 # ---------- fake providers ----------
 

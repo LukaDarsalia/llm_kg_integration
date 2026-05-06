@@ -59,5 +59,5 @@ class EmbeddingProvider(ABC):
         """Dimensionality of the produced vectors."""
 
     @abstractmethod
-    async def embed(self, texts: list[str]) -> "np.ndarray":
+    async def embed(self, texts: list[str]) -> np.ndarray:
         """Embed `texts`. Returns an array of shape (len(texts), self.dim)."""

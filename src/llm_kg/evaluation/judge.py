@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
 from llm_kg.providers.base import LLMProvider
 
@@ -63,7 +63,7 @@ class PromptedLLMJudge(LLMJudge):
         # PLACEHOLDER parser — real version lands later.
         verdicts: dict[str, str] = {}
         lines = [ln.strip() for ln in response.text.splitlines() if ln.strip()]
-        for axis, line in zip(axes_list, lines):
+        for axis, line in zip(axes_list, lines, strict=False):
             verdicts[axis] = "candidate" if line.upper().startswith("A") else "baseline"
         for axis in axes_list:
             verdicts.setdefault(axis, "baseline")

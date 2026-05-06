@@ -23,7 +23,7 @@ class VectorStore(ABC):
     def upsert(
         self,
         ids: list[str],
-        vectors: "np.ndarray",
+        vectors: np.ndarray,
         meta: list[dict[str, Any]],
     ) -> None:
         """Add or overwrite `len(ids)` items. `vectors.shape == (len(ids), dim)`."""
@@ -31,7 +31,7 @@ class VectorStore(ABC):
     @abstractmethod
     def search(
         self,
-        query: "np.ndarray",
+        query: np.ndarray,
         k: int,
         filter: dict[str, Any] | None = None,
     ) -> list[ScoredHit]:

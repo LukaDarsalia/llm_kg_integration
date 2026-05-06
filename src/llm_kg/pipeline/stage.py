@@ -10,12 +10,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
-
-if TYPE_CHECKING:
-    from llm_kg.logging_.base import ExperimentLogger
-    from llm_kg.providers.base import EmbeddingProvider, LLMProvider
-    from llm_kg.storage.base import GraphStore, KVStore, VectorStore
+from typing import Any, ClassVar, Generic, TypeVar
 
 InT = TypeVar("InT")
 OutT = TypeVar("OutT")
