@@ -1,0 +1,45 @@
+# LightRAG: dual-level (entity + concept) extraction → graph + chunk index →
+# dual-level keyword query → graph walk → generate.
+
+method:
+  name: lightrag
+  params:
+    chunk_size: 1200
+    chunk_overlap: 100
+    top_k_entities: 60
+    top_k_chunks: 5
+
+llm:
+  name: openai
+  params:
+    model: gpt-4o-mini
+
+embedder:
+  name: openai
+  params:
+    model: text-embedding-3-small
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/light/kv.json}}
+
+dataset:
+  name: ultradomain
+  params:
+    domain: cs
+    n_examples: 50
+
+evaluator:
+  name: generative
+  params:
+    axes: [comprehensiveness, diversity, empowerment, overall]
+    baseline_path: results/naive-cs/predictions.json
+
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: light-cs
+
+cache_dir: .cache/light
+seed: 0

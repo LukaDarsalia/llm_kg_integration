@@ -1,0 +1,38 @@
+# Defaults shared by every experiment. Individual configs override fields below.
+# NOTE: Plugin names below ("openai", "numpy", "networkx", …) refer to registry
+# entries that are NOT YET implemented — these YAMLs are templates for upcoming
+# PRs. Running `llm-kg run configs/examples/naive_rag.yaml` against the day-1
+# tree will fail with KeyError("unknown llm 'openai'"), which is the expected
+# state until provider implementations land.
+
+llm:
+  name: openai
+  params:
+    model: gpt-4o-mini
+    temperature: 0.0
+  cache: true
+
+embedder:
+  name: openai
+  params:
+    model: text-embedding-3-small
+  cache: true
+
+storage:
+  vector:
+    name: numpy
+    params: {}
+  graph:
+    name: networkx
+    params: {}
+  kv:
+    name: jsonfile
+    params:
+      path: .cache/kv.json
+
+logger:
+  name: wandb
+  project: llm-kg-research
+
+cache_dir: .cache
+seed: 0

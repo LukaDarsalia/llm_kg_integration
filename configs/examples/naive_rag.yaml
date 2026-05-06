@@ -1,0 +1,42 @@
+# Naive RAG baseline: chunk → embed → vector search → LLM.
+
+method:
+  name: naive_rag
+  params:
+    chunk_size: 256
+    chunk_overlap: 32
+    top_k: 5
+
+llm:
+  name: openai
+  params:
+    model: gpt-4o-mini
+
+embedder:
+  name: openai
+  params:
+    model: text-embedding-3-small
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/naive/kv.json}}
+
+dataset:
+  name: hotpotqa
+  params:
+    split: dev
+    n_examples: 100
+
+evaluator:
+  name: extractive
+  params:
+    recall_ks: [1, 5, 10]
+
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: naive-hotpot
+
+cache_dir: .cache/naive
+seed: 0
