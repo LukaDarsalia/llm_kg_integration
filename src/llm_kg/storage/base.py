@@ -100,7 +100,10 @@ class GraphStore(ABC):
 
 
 class KVStore(ABC):
-    """A simple typed key-value store. Used for chunk/document text and method-specific blobs."""
+    """A simple typed key-value store. Used for chunk/document text and method-specific blobs.
+
+    `get` raises KeyError on missing keys (mirrors `dict.__getitem__`).
+    """
 
     @abstractmethod
     def get(self, key: str) -> Any: ...
@@ -110,3 +113,10 @@ class KVStore(ABC):
 
     @abstractmethod
     def __contains__(self, key: str) -> bool: ...
+
+    def put_many(self, items: dict[str, Any]) -> None:
+        """Batch insert. Default implementation loops over `put`; impls that
+        need batched persistence (e.g. file-backed) should override.
+        """
+        for k, v in items.items():
+            self.put(k, v)
