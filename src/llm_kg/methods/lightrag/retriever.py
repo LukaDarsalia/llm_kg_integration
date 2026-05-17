@@ -28,8 +28,6 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-import numpy as np
-
 from llm_kg.data.types import ScoredHit
 from llm_kg.methods.lightrag.prompts import GRAPH_FIELD_SEP
 from llm_kg.pipeline.stage import PipelineContext

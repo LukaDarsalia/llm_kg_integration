@@ -22,7 +22,6 @@ from llm_kg.storage.jsonfile_kv import JsonFileKVStore
 from llm_kg.storage.networkx_graph import NetworkXGraphStore
 from llm_kg.storage.numpy_vector import NumpyVectorStore
 
-
 # ---------- _parse_keywords_json ----------
 
 def test_parse_keywords_strict_json() -> None:

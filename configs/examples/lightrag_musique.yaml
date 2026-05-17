@@ -1,0 +1,55 @@
+# LightRAG on the MuSiQue 1000-query subset (HippoRAG sample).
+#
+# Cost note: GPT-4o-mini extraction over 11,656 deduped passages without
+# gleaning is ~$11. With max_gleaning=1 the cost roughly doubles to ~$18.
+# Start with n_queries=50 to validate end-to-end (~$1) before scaling.
+
+method:
+  name: lightrag
+  params:
+    chunk_size: 1200
+    chunk_overlap: 100
+    max_gleaning: 0           # set to 1 for upstream-faithful behavior (+~$7 spend)
+    max_concurrent_extract: 16
+    top_k_entities: 40
+    top_k_chunks: 20
+    cosine_threshold: 0.2
+
+llm:
+  name: openrouter
+  params:
+    model: openai/gpt-4o-mini
+    temperature: 0.0
+    max_tokens: 2048
+  cache: true
+
+embedder:
+  name: openrouter
+  params:
+    model: openai/text-embedding-3-small
+    dim: 1536
+  cache: true
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/lightrag_musique/kv.json}}
+
+dataset:
+  name: musique
+  params:
+    cache_dir: .cache/musique
+    n_queries: 50               # bump to 1000 once a small run validates
+
+evaluator:
+  name: extractive
+  params:
+    recall_ks: [1, 5, 20]
+
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: lightrag-musique-50
+
+cache_dir: .cache/lightrag_musique
+seed: 0

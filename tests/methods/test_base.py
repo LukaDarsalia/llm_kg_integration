@@ -36,8 +36,8 @@ def test_concrete_method_returns_two_pipelines() -> None:
     assert isinstance(query, QueryPipeline)
 
 
-def test_method_registry_constructed() -> None:
-    # Day 1 ships no method implementations.
+def test_method_registry_has_lightrag() -> None:
+    assert "lightrag" in METHOD_REGISTRY
+    # Not yet implemented:
     assert "naive_rag" not in METHOD_REGISTRY
     assert "hipporag" not in METHOD_REGISTRY
-    assert "lightrag" not in METHOD_REGISTRY

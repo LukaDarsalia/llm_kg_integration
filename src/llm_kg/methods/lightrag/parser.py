@@ -14,6 +14,7 @@ LLM-format-drift, not strict validation.
 
 from __future__ import annotations
 
+import contextlib
 import re
 from dataclasses import dataclass, field
 
@@ -121,10 +122,8 @@ def parse_extraction(
             # If a 6th field looks like a float, use it as weight (LightRAG quirk)
             weight = 1.0
             if len(fields) >= 6:
-                try:
+                with contextlib.suppress(ValueError):
                     weight = float(_normalize_field(fields[5]))
-                except ValueError:
-                    pass
             result.relations.append(
                 ParsedRelation(
                     src=src, dst=dst, keywords=keywords, description=desc, weight=weight
