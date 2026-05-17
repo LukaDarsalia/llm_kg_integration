@@ -16,6 +16,7 @@ dependencies = [
     "openai>=1.40",
     "tiktoken>=0.7",
     "requests>=2.30",
+    "scipy>=1.11",
 ]
 
 [project.optional-dependencies]

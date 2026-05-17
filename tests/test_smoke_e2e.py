@@ -95,9 +95,28 @@ class FakeGraphStore(GraphStore):
 
     def add_edge(self, src, dst, **attrs):
         self._adj.setdefault(src, []).append(dst)
+        self._adj.setdefault(dst, []).append(src)
+
+    def get_node(self, id):
+        return {} if id in self._adj else None
+
+    def get_edge(self, src, dst):
+        return {} if src in self._adj and dst in self._adj.get(src, []) else None
 
     def neighbors(self, id):
         return list(self._adj.get(id, []))
+
+    def node_edges(self, id):
+        return [(n, {}) for n in self._adj.get(id, [])]
+
+    def node_degree(self, id):
+        return len(self._adj.get(id, []))
+
+    def nodes(self):
+        return list(self._adj)
+
+    def __contains__(self, id):
+        return id in self._adj
 
     def personalized_pagerank(self, seeds, **kwargs):
         return dict.fromkeys(seeds, 1.0)

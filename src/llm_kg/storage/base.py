@@ -8,6 +8,7 @@ ships zero concrete implementations — only contracts.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 from llm_kg.data.types import ScoredHit
@@ -39,16 +40,55 @@ class VectorStore(ABC):
 
 
 class GraphStore(ABC):
-    """A directed labelled multigraph store with PPR support."""
+    """An undirected labelled graph store with PPR support.
+
+    Semantics match LightRAG / HippoRAG: relations are treated as undirected
+    even when extraction produces a directed (src, dst) pair. `add_edge(a, b)`
+    and `add_edge(b, a)` should behave identically; `get_edge` and `neighbors`
+    return the same result regardless of direction.
+
+    When `add_edge` is called with an existing pair, attrs MUST be updated
+    (last-write-wins per attribute). Methods that want merge semantics
+    (sum weights, union keywords) should read the current attrs via `get_edge`,
+    compute the merged values, and re-call `add_edge`.
+    """
 
     @abstractmethod
-    def add_node(self, id: str, **attrs: Any) -> None: ...
+    def add_node(self, id: str, **attrs: Any) -> None:
+        """Add or update a node with the given attributes (last-write-wins per attr)."""
 
     @abstractmethod
-    def add_edge(self, src: str, dst: str, **attrs: Any) -> None: ...
+    def add_edge(self, src: str, dst: str, **attrs: Any) -> None:
+        """Add or update the edge between `src` and `dst` (undirected). Endpoints
+        are created if missing.
+        """
 
     @abstractmethod
-    def neighbors(self, id: str) -> list[str]: ...
+    def get_node(self, id: str) -> dict[str, Any] | None:
+        """Return the node's attribute dict, or None if absent."""
+
+    @abstractmethod
+    def get_edge(self, src: str, dst: str) -> dict[str, Any] | None:
+        """Return the edge's attribute dict, or None if absent."""
+
+    @abstractmethod
+    def neighbors(self, id: str) -> list[str]:
+        """Return all neighbours of `id` (undirected). Empty list if `id` is absent."""
+
+    @abstractmethod
+    def node_edges(self, id: str) -> list[tuple[str, dict[str, Any]]]:
+        """Return `(neighbour_id, edge_attrs)` for every edge incident to `id`."""
+
+    @abstractmethod
+    def node_degree(self, id: str) -> int:
+        """Number of edges incident to `id`. Zero if `id` is absent."""
+
+    @abstractmethod
+    def nodes(self) -> Iterable[str]:
+        """Iterate over all node ids."""
+
+    @abstractmethod
+    def __contains__(self, id: str) -> bool: ...
 
     @abstractmethod
     def personalized_pagerank(
