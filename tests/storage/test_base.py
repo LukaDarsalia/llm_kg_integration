@@ -22,7 +22,3 @@ def test_kv_store_is_abstract() -> None:
 def test_registries_are_distinct() -> None:
     assert VECTOR_REGISTRY is not GRAPH_REGISTRY
     assert GRAPH_REGISTRY is not KV_REGISTRY
-    # Day 1 ships no storage implementations.
-    assert "numpy" not in VECTOR_REGISTRY
-    assert "networkx" not in GRAPH_REGISTRY
-    assert "jsonfile" not in KV_REGISTRY
