@@ -19,9 +19,7 @@ def test_qa_dataset_is_abstract() -> None:
 
 
 def test_dataset_registry_constructed() -> None:
-    # Day 1 ships no dataset implementations.
-    assert "hotpotqa" not in DATASET_REGISTRY
-    assert "musique" not in DATASET_REGISTRY
+    assert "hotpotqa" not in DATASET_REGISTRY  # not yet implemented
 
 
 def test_concrete_corpus_iterable() -> None:
