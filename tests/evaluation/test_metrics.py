@@ -35,6 +35,17 @@ def test_f1_empty_prediction() -> None:
     assert f1_score("", ["something"]) == 0.0
 
 
+def test_f1_both_empty_is_one() -> None:
+    """MuSiQue convention: agree on no-answer → F1=1."""
+    assert f1_score("", [""]) == 1.0
+
+
+def test_musique_f1_alias_matches_f1_score() -> None:
+    from llm_kg.evaluation.metrics import musique_f1
+
+    assert musique_f1 is f1_score
+
+
 def test_f1_picks_max_across_golds() -> None:
     # against "x" → 0; against "x y" → 1 → max is 1
     assert f1_score("x y", ["x", "x y"]) == 1.0

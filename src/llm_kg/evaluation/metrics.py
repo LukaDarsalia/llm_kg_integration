@@ -39,7 +39,9 @@ def _f1_one(prediction: str, gold: str) -> float:
     pred_tokens = normalize_text(prediction).split()
     gold_tokens = normalize_text(gold).split()
     if not pred_tokens or not gold_tokens:
-        return 0.0
+        # MuSiQue / SQuAD convention: F1=1 when both are empty (agree on no-answer),
+        # F1=0 if exactly one is empty.
+        return float(pred_tokens == gold_tokens)
     common = Counter(pred_tokens) & Counter(gold_tokens)
     num_same = sum(common.values())
     if num_same == 0:
@@ -50,10 +52,15 @@ def _f1_one(prediction: str, gold: str) -> float:
 
 
 def f1_score(prediction: str, golds: list[str]) -> float:
-    """Maximum token-overlap F1 across `golds`."""
+    """Maximum token-overlap F1 across `golds`. MuSiQue's official `answer_f1`."""
     if not golds:
         return 0.0
     return max(_f1_one(prediction, g) for g in golds)
+
+
+# Alias for callers that want to be explicit about which paper's metric they use.
+# MuSiQue's `metrics/answer.py:compute_f1` is functionally identical to `f1_score`.
+musique_f1 = f1_score
 
 
 def recall_at_k(retrieved: list[str], relevant: list[str], k: int) -> float:
