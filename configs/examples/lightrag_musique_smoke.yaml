@@ -1,0 +1,48 @@
+# Phase 1 smoke: 1 MuSiQue query × ~20 paragraphs, real OpenRouter API.
+# Expected cost: ~$0.02–0.05. Catches plumbing + LLM format issues.
+
+method:
+  name: lightrag
+  params:
+    chunk_size: 1200
+    chunk_overlap: 100
+    max_gleaning: 0
+    max_concurrent_extract: 8
+    top_k_entities: 20
+    top_k_chunks: 5
+    cosine_threshold: 0.0
+
+llm:
+  name: openrouter
+  params:
+    model: openai/gpt-4o-mini
+    temperature: 0.0
+    max_tokens: 2048
+  cache: true
+
+embedder:
+  name: openrouter
+  params:
+    model: openai/text-embedding-3-small
+    dim: 1536
+  cache: true
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/lightrag_musique/kv.json}}
+
+dataset:
+  name: musique
+  params:
+    cache_dir: .cache/musique
+    n_queries: 1
+
+evaluator:
+  name: extractive
+  params:
+    recall_ks: [1, 5, 20]
+
+logger: {name: "null"}
+cache_dir: .cache/lightrag_musique
+seed: 0
