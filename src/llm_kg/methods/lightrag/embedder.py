@@ -18,17 +18,34 @@ context strings after a vector hit).
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import logging
 from typing import Any, ClassVar
+
+import numpy as np
 
 from llm_kg.methods.lightrag.prompts import GRAPH_FIELD_SEP
 from llm_kg.pipeline.stage import PipelineContext
 from llm_kg.pipeline.stages.embedder import Embedder
 from llm_kg.pipeline.stages.extractor import ExtractionResult
 
+log = logging.getLogger(__name__)
+
+# text-embedding-3-small has an 8192-token input cap; entities with many
+# accumulated descriptions can exceed this. Conservatively truncate to ~28k
+# chars (~7k tokens English).
+_MAX_EMBED_CHARS = 28_000
+
 
 def _mdhash(text: str, prefix: str) -> str:
     return f"{prefix}{hashlib.md5(text.encode('utf-8')).hexdigest()}"
+
+
+def _clamp_text(text: str) -> str:
+    if len(text) <= _MAX_EMBED_CHARS:
+        return text
+    return text[:_MAX_EMBED_CHARS]
 
 
 def _entity_id(name: str) -> str:
@@ -128,14 +145,48 @@ class LightRAGEmbedder(Embedder):
         return inp
 
     async def _embed_batched(self, ctx: PipelineContext, texts: list[str]):
-        """Call ctx.embedder in batches of `embed_batch_size`."""
-        import numpy as np
+        """Embed `texts` in batches with resilience against bad inputs.
 
+        Resilience policy (in order):
+          1. Truncate each text to `_MAX_EMBED_CHARS` (entities with many merged
+             descriptions can exceed text-embedding-3-small's 8192-token cap).
+          2. Replace empty/whitespace-only texts with a single space (some
+             embedding APIs reject empty inputs).
+          3. On a batch failure, retry once after a short backoff.
+          4. On second failure, recursively halve the batch to isolate the bad
+             text. Batches of size 1 that still fail get a zero vector and a
+             warning logged.
+        """
         if not texts:
             return np.zeros((0, ctx.embedder.dim), dtype=np.float32)
+
+        prepared = [_clamp_text(t) if t and t.strip() else " " for t in texts]
+
         out_batches = []
-        for i in range(0, len(texts), self.embed_batch_size):
-            batch = texts[i : i + self.embed_batch_size]
-            vecs = await ctx.embedder.embed(batch)
+        for i in range(0, len(prepared), self.embed_batch_size):
+            batch = prepared[i : i + self.embed_batch_size]
+            vecs = await self._embed_batch_resilient(ctx, batch)
             out_batches.append(vecs)
         return np.concatenate(out_batches, axis=0)
+
+    async def _embed_batch_resilient(self, ctx, batch: list[str]):
+        """Embed one batch, halving on failure to isolate bad inputs."""
+        try:
+            return await ctx.embedder.embed(batch)
+        except Exception as exc:  # noqa: BLE001  intentional catch-all for resilience
+            if len(batch) == 1:
+                log.warning(
+                    "embed failed for single text (%d chars): %s — using zero vector",
+                    len(batch[0]), exc,
+                )
+                return np.zeros((1, ctx.embedder.dim), dtype=np.float32)
+            log.info("embed batch of %d failed (%s); retrying once after 2s", len(batch), exc)
+            await asyncio.sleep(2.0)
+            try:
+                return await ctx.embedder.embed(batch)
+            except Exception as exc2:  # noqa: BLE001
+                log.info("retry failed (%s); splitting batch and recursing", exc2)
+                mid = len(batch) // 2
+                left = await self._embed_batch_resilient(ctx, batch[:mid])
+                right = await self._embed_batch_resilient(ctx, batch[mid:])
+                return np.concatenate([left, right], axis=0)
