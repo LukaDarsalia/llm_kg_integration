@@ -16,4 +16,5 @@ class Secrets(BaseSettings):
 
     openai_api_key: SecretStr = SecretStr("")
     anthropic_api_key: SecretStr = SecretStr("")
+    openrouter_api_key: SecretStr = SecretStr("")
     wandb_api_key: SecretStr = SecretStr("")

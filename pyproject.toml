@@ -13,6 +13,7 @@ dependencies = [
     "wandb>=0.17",
     "rich>=13.7",
     "aiofiles>=23.2",
+    "openai>=1.40",
 ]
 
 [project.optional-dependencies]
