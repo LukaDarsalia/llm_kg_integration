@@ -1,4 +1,3 @@
-import pytest
 
 from llm_kg.storage import GRAPH_REGISTRY
 from llm_kg.storage.networkx_graph import NetworkXGraphStore

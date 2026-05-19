@@ -44,6 +44,10 @@ evaluator:
   params:
     recall_ks: [1, 5, 20]
 
-logger: {name: "null"}
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: lightrag-musique-1000
+
 cache_dir: .cache/lightrag_musique
 seed: 0

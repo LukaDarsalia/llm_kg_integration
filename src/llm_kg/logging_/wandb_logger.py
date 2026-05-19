@@ -28,7 +28,19 @@ class WandbLogger(ExperimentLogger):
         self._stage_counts: dict[str, int] = defaultdict(int)
 
     def init(self, config: dict[str, Any], run_name: str) -> None:
+        import os
+
         import wandb
+
+        # pydantic-settings reads WANDB_API_KEY from .env into Python but does
+        # not export it; wandb.init looks at os.environ. Bridge the gap here so
+        # a key in .env Just Works without an explicit `export` in the shell.
+        from llm_kg.config.settings import Secrets
+
+        if "WANDB_API_KEY" not in os.environ:
+            key = Secrets().wandb_api_key.get_secret_value()
+            if key:
+                os.environ["WANDB_API_KEY"] = key
 
         self._run = wandb.init(
             project=self._project,
