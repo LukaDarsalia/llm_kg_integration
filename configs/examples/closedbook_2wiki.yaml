@@ -1,0 +1,21 @@
+# Closed-book 2Wiki: gpt-4o-mini answers from memory only. ~$0.20.
+
+method: {name: noretrieval, params: {}}
+llm: {name: openrouter, params: {model: openai/gpt-4o-mini, temperature: 0.0, max_tokens: 256}, cache: true}
+embedder: {name: openrouter, params: {model: openai/text-embedding-3-small, dim: 1536}, cache: true}
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/closedbook/kv.json}}
+
+dataset: {name: 2wikimultihopqa, params: {cache_dir: .cache/2wikimultihopqa, n_queries: 1000}}
+evaluator: {name: extractive, params: {recall_ks: [1, 5, 20]}}
+
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: closedbook-2wiki-1000
+
+cache_dir: .cache/closedbook
+seed: 0
