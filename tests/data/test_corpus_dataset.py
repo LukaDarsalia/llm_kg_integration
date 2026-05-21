@@ -19,7 +19,9 @@ def test_qa_dataset_is_abstract() -> None:
 
 
 def test_dataset_registry_constructed() -> None:
-    assert "hotpotqa" not in DATASET_REGISTRY  # not yet implemented
+    assert "hotpotqa" in DATASET_REGISTRY
+    assert "musique" in DATASET_REGISTRY
+    assert "2wikimultihopqa" in DATASET_REGISTRY
 
 
 def test_concrete_corpus_iterable() -> None:

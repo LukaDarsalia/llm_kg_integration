@@ -155,4 +155,7 @@ class LightRAGRetriever(Retriever):
         # Final: rank candidates by score desc, take top_k_chunks
         ranked = sorted(candidates, key=lambda c: scores.get(c, 0.0), reverse=True)
         ranked = ranked[: self.top_k_chunks]
-        return [ScoredHit(id=cid, score=scores.get(cid, 0.0), meta={}) for cid in ranked]
+        hits = [ScoredHit(id=cid, score=scores.get(cid, 0.0), meta={}) for cid in ranked]
+        # Stash for the runner so it can populate Prediction.retrieved for recall@k.
+        ctx.trace["last_retrieval"] = hits
+        return hits

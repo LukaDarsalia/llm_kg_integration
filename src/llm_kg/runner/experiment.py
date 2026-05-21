@@ -96,13 +96,20 @@ class Experiment:
         predictions: list[Prediction] = []
         for ex in dataset.examples():
             ctx.query = ex.question  # so the Generator can read the question
+            ctx.trace.pop("last_retrieval", None)
             answer = await query.run(ex.question, ctx)
+            # Methods that want their retrieved hits scored by the evaluator
+            # (for recall@k) write them to ctx.trace["last_retrieval"].
+            retrieved = ctx.trace.get("last_retrieval") or []
+            supporting = ex.metadata.get("supporting") if isinstance(ex.metadata, dict) else None
             predictions.append(
                 Prediction(
                     qid=ex.id,
                     question=ex.question,
                     answer=answer if isinstance(answer, str) else str(answer),
+                    retrieved=list(retrieved),
                     gold=ex.answers if ex.answers else ex.long_answer,
+                    relevant_ids=list(supporting) if supporting else None,
                 )
             )
 
