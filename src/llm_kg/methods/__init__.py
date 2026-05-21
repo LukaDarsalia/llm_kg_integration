@@ -7,6 +7,6 @@ from llm_kg.registry import Registry
 METHOD_REGISTRY: Registry[Method] = Registry("method")
 
 # Import method packages so their @register decorators run.
-from llm_kg.methods import lightrag  # noqa: E402, F401
+from llm_kg.methods import lightrag, noretrieval  # noqa: E402, F401
 
 __all__ = ["METHOD_REGISTRY", "Method", "MethodConfig"]

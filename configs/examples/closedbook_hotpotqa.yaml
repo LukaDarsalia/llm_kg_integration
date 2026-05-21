@@ -1,0 +1,33 @@
+# Closed-book probe: gpt-4o-mini answers HotpotQA from memory only.
+# No indexing, no retrieval — every query goes to the LLM with empty context.
+# If EM here lands close to our 0.5020 (retrieval-based) result, then the
+# LLM has memorized this dataset and our headline numbers are inflated.
+#
+# Implementation note: uses the "noretrieval" method (added alongside this
+# config). Indexing is a no-op; query is just (question, "") → LLM → answer.
+#
+# Cost: ~$0.20 (1000 short LLM calls, gpt-4o-mini). No embeddings.
+
+method:
+  name: noretrieval
+  params: {}
+
+llm: {name: openrouter, params: {model: openai/gpt-4o-mini, temperature: 0.0, max_tokens: 256}, cache: true}
+# Embedder still required by the schema but never called.
+embedder: {name: openrouter, params: {model: openai/text-embedding-3-small, dim: 1536}, cache: true}
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/closedbook/kv.json}}
+
+dataset: {name: hotpotqa, params: {cache_dir: .cache/hotpotqa, n_queries: 1000}}
+evaluator: {name: extractive, params: {recall_ks: [1, 5, 20]}}
+
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: closedbook-hotpotqa-1000
+
+cache_dir: .cache/closedbook
+seed: 0
