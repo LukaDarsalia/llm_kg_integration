@@ -10,6 +10,7 @@ import numpy as np
 
 from llm_kg.config import RootConfig, load_config
 from llm_kg.data import DATASET_REGISTRY
+from llm_kg.data.types import ScoredHit
 from llm_kg.evaluation import EVALUATOR_REGISTRY, Prediction
 from llm_kg.logging_ import LOGGER_REGISTRY
 from llm_kg.methods import METHOD_REGISTRY
@@ -99,15 +100,22 @@ class Experiment:
             ctx.trace.pop("last_retrieval", None)
             answer = await query.run(ex.question, ctx)
             # Methods that want their retrieved hits scored by the evaluator
-            # (for recall@k) write them to ctx.trace["last_retrieval"].
+            # (for recall@k) write them to ctx.trace["last_retrieval"]. Hits
+            # carry chunk ids of the form "{doc_id}::chunk{N}"; supporting ids
+            # in the dataset are doc-level, so strip the chunk suffix here so
+            # recall@k compares apples-to-apples.
             retrieved = ctx.trace.get("last_retrieval") or []
+            retrieved_doc = [
+                ScoredHit(id=h.id.split("::", 1)[0], score=h.score, meta=h.meta)
+                for h in retrieved
+            ]
             supporting = ex.metadata.get("supporting") if isinstance(ex.metadata, dict) else None
             predictions.append(
                 Prediction(
                     qid=ex.id,
                     question=ex.question,
                     answer=answer if isinstance(answer, str) else str(answer),
-                    retrieved=list(retrieved),
+                    retrieved=retrieved_doc,
                     gold=ex.answers if ex.answers else ex.long_answer,
                     relevant_ids=list(supporting) if supporting else None,
                 )
