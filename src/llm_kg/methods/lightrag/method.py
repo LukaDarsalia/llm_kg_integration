@@ -79,6 +79,9 @@ class LightRAG(Method):
             ),
         ])
 
+        prompt_template = p.get("prompt_template") or self._resolve_prompt(
+            p.get("prompt_style", "short_answer")
+        )
         query = QueryPipeline(stages=[
             LightRAGQueryProcessor(language=p.get("language", DEFAULT_LANGUAGE)),
             LightRAGRetriever(
@@ -87,10 +90,20 @@ class LightRAG(Method):
                 cosine_threshold=p.get("cosine_threshold", 0.2),
             ),
             DefaultContextBuilder(),
-            DefaultGenerator(prompt_template=p.get("prompt_template", SHORT_ANSWER_PROMPT)),
+            DefaultGenerator(prompt_template=prompt_template),
         ])
 
         return indexing, query
+
+    @staticmethod
+    def _resolve_prompt(style: str) -> str:
+        if style == "short_answer":
+            return SHORT_ANSWER_PROMPT
+        if style == "longform_upstream":
+            return PROMPTS["rag_response_longform_upstream"]
+        raise ValueError(
+            f"unknown prompt_style {style!r} (expected 'short_answer' or 'longform_upstream')"
+        )
 
 
 # Touch the upstream PROMPTS dict to make sure prompts are importable

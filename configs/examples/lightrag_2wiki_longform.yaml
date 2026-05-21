@@ -1,0 +1,32 @@
+# Controlled experiment: 2Wiki with LightRAG's upstream long-form prompt.
+
+method:
+  name: lightrag
+  params:
+    chunk_size: 1200
+    chunk_overlap: 100
+    max_gleaning: 0
+    max_concurrent_extract: 16
+    top_k_entities: 40
+    top_k_chunks: 20
+    cosine_threshold: 0.2
+    prompt_style: longform_upstream
+
+llm: {name: openrouter, params: {model: openai/gpt-4o-mini, temperature: 0.0, max_tokens: 2048}, cache: true}
+embedder: {name: openrouter, params: {model: openai/text-embedding-3-small, dim: 1536}, cache: true}
+
+storage:
+  vector: {name: numpy, params: {}}
+  graph: {name: networkx, params: {}}
+  kv: {name: jsonfile, params: {path: .cache/lightrag_2wiki/kv.json}}
+
+dataset: {name: 2wikimultihopqa, params: {cache_dir: .cache/2wikimultihopqa, n_queries: 1000}}
+evaluator: {name: extractive, params: {recall_ks: [1, 5, 20]}}
+
+logger:
+  name: wandb
+  project: llm-kg-research
+  run_name: lightrag-2wiki-1000-longform
+
+cache_dir: .cache/lightrag_2wiki
+seed: 0
