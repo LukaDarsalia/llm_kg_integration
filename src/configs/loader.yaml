@@ -1,0 +1,18 @@
+# Data loader configuration. Each entry under `datasets` selects a registered loader
+# (key = the @register_loader name) and passes it `params`. Disabled entries are skipped.
+# A loader yields one or more (subset_name, corpus_df, qa_df) groups; each is validated
+# against the dataset output contract and written as <subset>/corpus.parquet + qa.parquet.
+
+datasets:
+  - name: graphrag_bench
+    enabled: true
+    description: "GraphRAG-Bench medical + novel corpora and QA (from the git submodule)."
+    params:
+      source_dir: third_party/GraphRAG-Benchmark/Datasets
+      subsets: [medical, novel]
+
+  # Example of an additional benchmark. Implement load_hotpotqa in loaders.py to enable.
+  - name: hotpotqa
+    enabled: false
+    description: "HotpotQA (example stub — see src/pipeline/loader/loaders.py)."
+    params: {}

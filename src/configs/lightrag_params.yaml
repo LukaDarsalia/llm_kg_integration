@@ -1,0 +1,14 @@
+# LightRAG method parameters (consumed by src/methods/lightrag/).
+# Model providers (LLM + embedding) come from src/configs/providers.yaml, NOT here.
+#
+# `index`  -> used by the indexer stage when building the graph index.
+# `query`  -> default retrieval settings used by the evaluator stage (CLI --mode overrides).
+
+index:
+  chunk_token_size: 1200            # LightRAG default chunk size
+  chunk_overlap_token_size: 100
+
+query:
+  mode: hybrid                      # naive | local | global | hybrid | mix
+  top_k: 60                         # entities/relations retrieved
+  chunk_top_k: 20                   # text chunks kept for the answer/context
