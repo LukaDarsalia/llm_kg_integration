@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Tuple
 from lightrag import LightRAG, QueryParam
 
 from src.pipeline.shared.contracts import BaseRetriever
+
 from .models import build_lightrag_embedding_func, build_lightrag_llm_func
 
 

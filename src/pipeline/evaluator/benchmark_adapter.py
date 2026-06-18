@@ -126,12 +126,16 @@ async def _score_generation_sample(rec, metrics, llm, embeddings, sem) -> Dict[s
             )
         if "coverage_score" in metrics:
             out["coverage_score"] = await _safe_metric(
-                compute_coverage_score(rec["question"], rec["ground_truth"], rec["generated_answer"], llm),
+                compute_coverage_score(
+                    rec["question"], rec["ground_truth"], rec["generated_answer"], llm
+                ),
                 f"coverage_score[{qid}]",
             )
         if "faithfulness" in metrics:
             out["faithfulness"] = await _safe_metric(
-                compute_faithfulness_score(rec["question"], rec["generated_answer"], rec["context"], llm),
+                compute_faithfulness_score(
+                    rec["question"], rec["generated_answer"], rec["context"], llm
+                ),
                 f"faithfulness[{qid}]",
             )
         return out
@@ -152,7 +156,7 @@ async def score_generation(records, llm, embeddings, max_concurrency: int = 8) -
 
     by_type: Dict[str, Dict[str, List[float]]] = {}
     samples = []
-    for (rec, qt), res in zip(scored, results):
+    for (rec, qt), res in zip(scored, results, strict=True):
         by_type.setdefault(qt, {})
         for metric, value in res.items():
             by_type[qt].setdefault(metric, []).append(value)
@@ -184,7 +188,8 @@ async def _score_retrieval_sample(rec, llm, sem) -> Dict[str, float]:
     qid = rec.get("id")
     async with sem:
         relevancy = await _safe_metric(
-            compute_context_relevance(rec["question"], rec["context"], llm), f"context_relevancy[{qid}]"
+            compute_context_relevance(rec["question"], rec["context"], llm),
+            f"context_relevancy[{qid}]",
         )
         recall = await _safe_metric(
             compute_evidence_recall(rec["question"], rec["context"], rec["evidence"], llm),
@@ -197,7 +202,7 @@ async def score_retrieval(records, llm, max_concurrency: int = 8) -> Dict[str, A
     """Retrieval scoring: context_relevancy + evidence_recall (NaN failures excluded)."""
     sem = asyncio.Semaphore(max_concurrency)
     results = await asyncio.gather(*[_score_retrieval_sample(r, llm, sem) for r in records])
-    samples = [{"id": r["id"], **res} for r, res in zip(records, results)]
+    samples = [{"id": r["id"], **res} for r, res in zip(records, results, strict=True)]
     overall = {
         "context_relevancy": _mean([s["context_relevancy"] for s in samples]),
         "evidence_recall": _mean([s["evidence_recall"] for s in samples]),

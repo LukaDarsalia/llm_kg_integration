@@ -12,6 +12,7 @@ from typing import List
 from lightrag import LightRAG
 
 from src.pipeline.shared.contracts import BaseIndexer, CorpusDoc
+
 from .models import build_lightrag_embedding_func, build_lightrag_llm_func
 
 

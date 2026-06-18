@@ -36,7 +36,7 @@ uv run python -m src.pipeline.loader.runner \
 |--------|---------|---------|
 | `--description` | *(required)* | run note (W&B) |
 | `--config` | `src/configs/loader.yaml` | which loaders + params |
-| `--bucket` | `graphrag-bench-data` | S3 bucket |
+| `--bucket` | `personal-data-science-data` | S3 bucket |
 | `--project` | `GraphRAG_Bench` | W&B project |
 | `--develop` | off | anonymous/offline run (no W&B key) |
 

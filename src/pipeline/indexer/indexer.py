@@ -16,10 +16,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-import wandb
-import yaml
 
+import wandb
 from src.methods.registry import get_method
+from src.pipeline.shared.config import load_yaml_mapping
 from src.pipeline.shared.contracts import CorpusDoc, corpus_dir_name
 from src.pipeline.shared.providers import load_providers, public_summary
 
@@ -50,11 +50,10 @@ class Indexer:
         self._log_config_to_wandb()
 
     def _load_yaml(self, path: Path) -> Dict[str, Any]:
-        if not path.exists():
-            print(f"  ⚠️  method config {path} not found; proceeding with empty params.")
-            return {}
-        with open(path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
+        # Required: a wrong/missing --config must fail loudly, never silently fall back to
+        # empty params. A method that genuinely has no parameters should ship an empty
+        # yaml file (which load_yaml_mapping reads as {}); a *missing* file is an error.
+        return load_yaml_mapping(path, description="method config")
 
     def _log_config_to_wandb(self) -> None:
         if self.config_path.exists():
@@ -81,9 +80,7 @@ class Indexer:
     async def _run(self) -> None:
         subsets = self._discover_subsets()
         if not subsets:
-            raise ValueError(
-                f"No subsets with corpus.parquet found under {self.input_folder_dir}."
-            )
+            raise ValueError(f"No subsets with corpus.parquet found under {self.input_folder_dir}.")
 
         corpora_indexed = 0
         for subset in subsets:

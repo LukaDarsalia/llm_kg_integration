@@ -46,3 +46,30 @@ indexing = ["igraph>=0.11"]
 #   uv run python -m src.pipeline.loader.runner --help
 # which puts the repo root (and therefore `src`) on sys.path automatically.
 package = false
+
+[dependency-groups]
+# Dev tools (installed by `uv sync`): linter/formatter + type checker.
+dev = ["ruff>=0.6.0", "mypy>=1.11"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["third_party", "artifacts", "wandb", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B"]
+ignore = ["E501"]  # line length is the formatter's job (it can't always split strings/URLs)
+
+[tool.ruff.lint.isort]
+# `src` is the only first-party package; without this pin, the local wandb/ run-cache
+# directory makes ruff misclassify `import wandb` as first-party.
+known-first-party = ["src"]
+
+[tool.mypy]
+files = ["src"]
+python_version = "3.10"
+ignore_missing_imports = true   # lightrag / wandb / langchain / boto3 ship no/partial stubs
+exclude = ["third_party/", "\\.venv/"]
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true

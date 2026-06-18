@@ -39,7 +39,9 @@ def register_method(
     description: str = "",
 ) -> None:
     """Register a method's indexer + retriever classes under ``name``."""
-    _REGISTRY[name] = Method(name=name, indexer=indexer, retriever=retriever, description=description)
+    _REGISTRY[name] = Method(
+        name=name, indexer=indexer, retriever=retriever, description=description
+    )
 
 
 def list_methods() -> Dict[str, str]:

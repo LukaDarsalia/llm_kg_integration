@@ -9,10 +9,11 @@ Consumes the ``dataset`` artifact, produces ``index_<method>`` (mirrored to S3).
 
 import os
 from pathlib import Path
+from typing import Optional
 
 import click
-import wandb
 
+import wandb
 from src.pipeline.indexer.indexer import Indexer
 from src.pipeline.shared.storage import generate_folder_name, get_s3_loader
 
@@ -21,23 +22,29 @@ from src.pipeline.shared.storage import generate_folder_name, get_s3_loader
 @click.option("--dataset-artifact-version", required=True, type=str, help="e.g. latest, v1.")
 @click.option("--method", required=True, type=str, help="Method name (e.g. lightrag).")
 @click.option("--subset", default=None, type=str, help="Only index this subset (default: all).")
-@click.option("--source", default=None, type=str, help="Only index this single corpus_name (e.g. one novel).")
+@click.option(
+    "--source", default=None, type=str, help="Only index this single corpus_name (e.g. one novel)."
+)
 @click.option("--bucket", default="personal-data-science-data", type=str, help="S3 bucket.")
 @click.option("--project", default="GraphRAG_Bench", type=str, help="W&B project.")
 @click.option("--description", required=True, type=str, help="Experiment description.")
-@click.option("--config", default=None, type=str, help="Method params yaml "
-              "(default: src/configs/<method>_params.yaml).")
+@click.option(
+    "--config",
+    default=None,
+    type=str,
+    help="Method params yaml (default: src/configs/<method>_params.yaml).",
+)
 @click.option("--providers", "providers_path", default="src/configs/providers.yaml", type=str)
 @click.option("--develop", is_flag=True, default=False, help="Anonymous/offline W&B run.")
 def main(
     dataset_artifact_version: str,
     method: str,
-    subset: str,
-    source: str,
+    subset: Optional[str],
+    source: Optional[str],
     bucket: str,
     project: str,
     description: str,
-    config: str,
+    config: Optional[str],
     providers_path: str,
     develop: bool,
 ) -> None:

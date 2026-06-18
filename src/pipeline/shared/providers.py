@@ -10,24 +10,26 @@ callables a method needs lives next to that method (e.g.
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import Any, Dict
 
-import yaml
+from src.pipeline.shared.config import load_yaml_mapping
 
 DEFAULT_PROVIDERS_PATH = "src/configs/providers.yaml"
 
 
 def load_providers(config_path: str = DEFAULT_PROVIDERS_PATH) -> Dict[str, Any]:
-    """Load and lightly validate the providers config."""
-    path = Path(config_path)
-    if not path.exists():
-        raise FileNotFoundError(f"Providers config not found: {config_path}")
-    with open(path, "r", encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+    """Load and validate the providers config (a mapping with `llm` + `embedding`)."""
+    cfg = load_yaml_mapping(config_path, description="providers config")
     for role in ("llm", "embedding"):
         if role not in cfg:
-            raise ValueError(f"providers config missing required role: '{role}'")
+            raise ValueError(
+                f"providers config ({config_path}) is missing the required '{role}' "
+                f"section. Found: {sorted(cfg)}"
+            )
+        if not isinstance(cfg[role], dict):
+            raise ValueError(
+                f"providers config '{role}' must be a mapping, got {type(cfg[role]).__name__}."
+            )
     return cfg
 
 

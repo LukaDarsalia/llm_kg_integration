@@ -9,14 +9,16 @@ import os
 from pathlib import Path
 
 import click
-import wandb
 
+import wandb
 from src.pipeline.loader.loader import DatasetLoader
 from src.pipeline.shared.storage import generate_folder_name, get_s3_loader
 
 
 @click.command()
-@click.option("--bucket", default="personal-data-science-data", type=str, help="S3 bucket for data.")
+@click.option(
+    "--bucket", default="personal-data-science-data", type=str, help="S3 bucket for data."
+)
 @click.option("--project", default="GraphRAG_Bench", type=str, help="W&B project name.")
 @click.option("--description", required=True, type=str, help="Experiment description.")
 @click.option("--config", default="src/configs/loader.yaml", type=str, help="Loader config.")

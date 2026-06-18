@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import wandb
-import yaml
+from src.pipeline.shared.config import load_yaml_mapping
 
 from .loaders import *  # noqa: F401,F403  (import registers all loaders)
 from .registry import loader_registry
@@ -38,10 +38,7 @@ class DatasetLoader:
         self._log_config_to_wandb()
 
     def _load_config(self) -> Dict[str, Any]:
-        if not self.config_path.exists():
-            raise FileNotFoundError(f"Config file not found: {self.config_path}")
-        with open(self.config_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+        return load_yaml_mapping(self.config_path, description="loader config")
 
     def _log_config_to_wandb(self) -> None:
         self.artifact.add_file(str(self.config_path), name="config.yaml")

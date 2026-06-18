@@ -9,10 +9,11 @@ Consumes ``index_<method>``, produces ``results_<method>`` (mirrored to S3).
 
 import os
 from pathlib import Path
+from typing import Optional
 
 import click
-import wandb
 
+import wandb
 from src.pipeline.evaluator.evaluator import Evaluator
 from src.pipeline.shared.storage import generate_folder_name, get_s3_loader
 
@@ -22,8 +23,12 @@ from src.pipeline.shared.storage import generate_folder_name, get_s3_loader
 @click.option("--method", required=True, type=str, help="Method name (e.g. lightrag).")
 @click.option("--subset", default=None, type=str, help="Only evaluate this subset.")
 @click.option("--source", default=None, type=str, help="Only evaluate this single corpus_name.")
-@click.option("--mode", default=None, type=str, help="Override retrieval mode "
-              "(naive|local|global|hybrid|mix).")
+@click.option(
+    "--mode",
+    default=None,
+    type=str,
+    help="Override retrieval mode (naive|local|global|hybrid|mix).",
+)
 @click.option("--num-samples", default=None, type=int, help="Cap questions per subset (dev).")
 @click.option("--bucket", default="personal-data-science-data", type=str, help="S3 bucket.")
 @click.option("--project", default="GraphRAG_Bench", type=str, help="W&B project.")
@@ -34,10 +39,10 @@ from src.pipeline.shared.storage import generate_folder_name, get_s3_loader
 def main(
     index_artifact_version: str,
     method: str,
-    subset: str,
-    source: str,
-    mode: str,
-    num_samples: int,
+    subset: Optional[str],
+    source: Optional[str],
+    mode: Optional[str],
+    num_samples: Optional[int],
     bucket: str,
     project: str,
     description: str,

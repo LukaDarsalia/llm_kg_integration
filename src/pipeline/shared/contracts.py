@@ -108,7 +108,9 @@ class BaseIndexer(ABC):
 
     def __init__(self, working_dir: str, providers: Dict[str, Any], params: Dict[str, Any]):
         self.working_dir = working_dir
-        self.providers = providers  # resolved {"llm": {...}, "embedding": {...}} from providers.yaml
+        self.providers = (
+            providers  # resolved {"llm": {...}, "embedding": {...}} from providers.yaml
+        )
         self.params = params  # method param dict (e.g. lightrag_params.yaml)
 
     @abstractmethod

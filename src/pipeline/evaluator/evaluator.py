@@ -19,9 +19,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-import wandb
-import yaml
 
+import wandb
 from src.methods.registry import get_method
 from src.pipeline.evaluator.benchmark_adapter import (
     build_judge_embeddings,
@@ -29,6 +28,7 @@ from src.pipeline.evaluator.benchmark_adapter import (
     score_generation,
     score_retrieval,
 )
+from src.pipeline.shared.config import load_yaml_mapping
 from src.pipeline.shared.contracts import Prediction, corpus_dir_name, validate_predictions
 from src.pipeline.shared.providers import load_providers
 
@@ -74,17 +74,20 @@ class Evaluator:
 
     # --- config / meta ----------------------------------------------------------------
     def _load_yaml(self, path: Path) -> Dict[str, Any]:
-        if not path.exists():
-            raise FileNotFoundError(f"Config file not found: {path}")
-        with open(path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
+        return load_yaml_mapping(path, description="evaluator config")
 
     def _load_method_meta(self) -> Dict[str, Any]:
+        # Strict: the retriever must use the SAME embedding config as indexing. Silently
+        # falling back to providers.yaml could load a different embedding space and produce
+        # quietly-wrong results, so a missing method_meta.json is a hard error.
         meta_path = self.input_folder_dir / "method_meta.json"
-        if meta_path.exists():
-            return json.loads(meta_path.read_text())
-        print(f"  ⚠️  {meta_path} missing; falling back to providers.yaml for the retriever.")
-        return {}
+        if not meta_path.exists():
+            raise FileNotFoundError(
+                f"method_meta.json not found in the index artifact ({meta_path}). The index "
+                "is incomplete or was not produced by this pipeline's indexer — re-run the "
+                "indexer stage."
+            )
+        return json.loads(meta_path.read_text())
 
     def _log_config_to_wandb(self) -> None:
         if self.config_path.exists():
@@ -119,7 +122,11 @@ class Evaluator:
         return query
 
     def _num_samples(self) -> Optional[int]:
-        return self.cli_num_samples if self.cli_num_samples is not None else self.config.get("num_samples")
+        return (
+            self.cli_num_samples
+            if self.cli_num_samples is not None
+            else self.config.get("num_samples")
+        )
 
     def _max_concurrency(self) -> int:
         return int((self.config.get("judge") or {}).get("max_concurrency", 8))
@@ -177,10 +184,14 @@ class Evaluator:
             for source, group in qa_df.groupby("source"):
                 working_dir = self.input_folder_dir / subset / corpus_dir_name(source)
                 if not working_dir.exists():
-                    print(f"  ⚠️  no index for source '{source}' ({working_dir}); skipping {len(group)} q.")
+                    print(
+                        f"  ⚠️  no index for source '{source}' ({working_dir}); skipping {len(group)} q."
+                    )
                     continue
                 retriever = self.method.retriever(
-                    working_dir=str(working_dir), providers=retriever_providers, params=method_params
+                    working_dir=str(working_dir),
+                    providers=retriever_providers,
+                    params=method_params,
                 )
                 await retriever.initialize()
                 try:
@@ -233,9 +244,7 @@ class Evaluator:
             }
         )
 
-        sample = pd.DataFrame(
-            [{k: r[k] for k in _PREDICTION_TABLE_COLS} for r in records[:50]]
-        )
+        sample = pd.DataFrame([{k: r[k] for k in _PREDICTION_TABLE_COLS} for r in records[:50]])
         self.artifact.add(wandb.Table(dataframe=sample), "prediction_sample")
         # predictions.json / scores.json live in output_folder_dir and are captured by the
         # runner's add_reference("s3://.../output_folder_dir") — do NOT add_file them here
