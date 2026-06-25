@@ -1,0 +1,4 @@
+[submodule "third_party/GraphRAG-Benchmark"]
+	path = third_party/GraphRAG-Benchmark
+	url = https://github.com/GraphRAG-Bench/GraphRAG-Benchmark.git
+	ignore = dirty

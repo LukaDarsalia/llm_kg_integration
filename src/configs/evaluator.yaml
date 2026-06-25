@@ -1,0 +1,22 @@
+# Evaluator configuration. The judge LLM + embedding follow the GraphRAG-Bench
+# leaderboard (gpt-4o-mini via providers.yaml, BAAI/bge-large-en-v1.5 run locally).
+
+# Which evaluation dimensions to compute.
+dimensions:
+  generation: true     # answer quality per question_type (rouge / answer_correctness / coverage / faithfulness)
+  retrieval: true      # context_relevancy + evidence_recall over the retrieved context
+  indexing: false      # graph-structure metrics (needs the `indexing` extra; method-specific)
+
+# Overrides for the method's retrieval settings (defaults come from the method param file,
+# e.g. lightrag_params.yaml `query`). The runner's --mode flag overrides this in turn.
+retrieval:
+  mode: hybrid
+
+# Judge settings.
+judge:
+  embedding_model: BAAI/bge-large-en-v1.5   # forced local for leaderboard parity
+  max_concurrency: 8                         # parallel async judge calls
+
+# Cap on questions evaluated per run (null = all). Use a small number while developing
+# — the judge makes several gpt-4o-mini calls per question.
+num_samples: null

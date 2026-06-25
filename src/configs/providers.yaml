@@ -1,0 +1,51 @@
+# Shared model providers (LLM + embedding) used across the indexer and evaluator stages.
+# Every entry is OpenAI-compatible unless `provider: local`. Swap providers by editing
+# ONLY this file — API keys are read from environment variables, never hardcoded here.
+#
+# The values below reproduce the GraphRAG-Bench leaderboard defaults:
+#   generation/judge model = gpt-4o-mini, embedding = BAAI/bge-large-en-v1.5 (1024-dim).
+
+llm:
+  provider: openrouter                      # openrouter | openai | <any openai-compatible>
+  base_url: https://openrouter.ai/api/v1
+  api_key_env: OPENROUTER_KEY               # name of the env var holding the key
+  model: openai/gpt-4o-mini
+  params:
+    temperature: 0.0
+    top_p: 1.0
+    seed: 42
+    presence_penalty: 0
+    frequency_penalty: 0
+  # OpenRouter-only: force the OpenAI upstream so gpt-4o-mini does not silently drift to
+  # an Azure deployment (which can change outputs even at temperature 0). Forwarded as
+  # the request `extra_body`. Delete this block for plain (cheapest) OpenRouter routing.
+  extra_body:
+    provider:
+      order: ["openai"]
+      allow_fallbacks: false
+  # To use OpenAI directly for maximum leaderboard parity, instead set:
+  #   provider: openai
+  #   base_url: https://api.openai.com/v1
+  #   api_key_env: OPENAI_API_KEY
+  #   model: gpt-4o-mini
+  #   (and remove the extra_body block)
+
+embedding:
+  provider: local                           # local | openrouter | deepinfra | siliconflow
+  model: BAAI/bge-large-en-v1.5
+  dim: 1024                                  # validated at startup; must match the index
+  max_seq_len: 512                           # bge-large native context window
+  normalize: true
+  # `local` runs the model via HuggingFace/transformers (lightrag.llm.hf.hf_embed),
+  # mirroring GraphRAG-Bench's Examples/run_lightrag.py (symmetric, no query prefix).
+  #
+  # Hosted alternatives (OpenAI-compatible /embeddings). Uncomment and set `provider`:
+  #   provider: openrouter
+  #   base_url: https://openrouter.ai/api/v1
+  #   api_key_env: OPENROUTER_KEY
+  #   model: baai/bge-large-en-v1.5          # NOTE: lowercase on OpenRouter
+  #
+  #   provider: deepinfra
+  #   base_url: https://api.deepinfra.com/v1/openai
+  #   api_key_env: DEEPINFRA_API_KEY
+  #   model: BAAI/bge-large-en-v1.5

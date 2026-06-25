@@ -1,0 +1,18 @@
+# Copy this file to `.env` and fill in the values. `.env` is gitignored.
+# Loaded automatically by src/pipeline/shared/storage.py via python-dotenv.
+
+# --- LLM provider (default: OpenRouter, pinned to the OpenAI upstream) ---
+# Used by the generation LLM (LightRAG) and the GraphRAG-Bench judge (gpt-4o-mini).
+OPENROUTER_KEY=
+
+# Optional alternative LLM providers (switch in src/configs/providers.yaml).
+# OPENAI_API_KEY=
+# DEEPINFRA_API_KEY=
+# SILICONFLOW_API_KEY=
+
+# --- Storage: S3 (index cache + dataset artifacts are mirrored here) ---
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+
+# --- Experiment tracking / versioning ---
+WANDB_API_KEY=
